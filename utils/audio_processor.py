@@ -10,6 +10,13 @@ def download_youtube_audio(url :str) ->str:
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": output_path,
+        # Use the Android client, which reliably bypasses YouTube's 403
+        # bot-detection on the media servers (default web/tv/ios clients get blocked).
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android"],
+            }
+        },
         "postprocessors": [
             {
                 "key": "FFmpegExtractAudio",
