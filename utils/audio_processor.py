@@ -6,17 +6,33 @@ DOWNLOAD_DIR = 'downloads'
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 def download_youtube_audio(url :str) ->str:
+    # YouTube intermittently 403s media downloads depending on client + IP.
+    # Try several player clients in order until one succeeds.
+    clients = ["android", "ios", "tv"]
+    last_err = None
+
+    for client in clients:
+        try:
+            return _download_with_client(url, client)
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+            print(f"  → client '{client}' failed: {e}")
+            continue
+
+    raise RuntimeError(f"Failed to download YouTube audio: {last_err}")
+
+
+def _download_with_client(url :str, client :str) ->str:
     output_path = os.path.join(DOWNLOAD_DIR, "%(title)s.%(ext)s")
     ydl_opts = {
         # Explicitly use a webm audio-only format so the final container is
         # deterministic (avoids the intermediate .mp4/.m4a path mapping bug).
         "format": "251/bestaudio/best",
         "outtmpl": output_path,
-        # Use the Android client, which reliably bypasses YouTube's 403
-        # bot-detection on the media servers (default web/tv/ios clients get blocked).
+        # Varies the player client to bypass YouTube's 403 bot-detection.
         "extractor_args": {
             "youtube": {
-                "player_client": ["android"],
+                "player_client": [client],
             }
         },
         "postprocessors": [
@@ -31,7 +47,7 @@ def download_youtube_audio(url :str) ->str:
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
         # The FFmpeg postprocessor converts to WAV, so point back at the .wav
-        # that actually exists on disk (interval container is webm here).
+        # that actually exists on disk (interim container is webm here).
         base = os.path.splitext(ydl.prepare_filename(info))[0]
         filename = base + ".wav"
     return filename
