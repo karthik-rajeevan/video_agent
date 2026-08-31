@@ -1,0 +1,20 @@
+✅ WHAT THIS TOOL DOES:
+→ Takes any YouTube URL or audio/video file as input
+→ Transcribes English meetings using local Whisper AI
+→ Transcribes Hindi & Hinglish meetings using Sarvam AI
+→ Summarises the full meeting in bullet points
+→ Extracts action items with owner and deadline
+→ Extracts key decisions made in the meeting
+→ Extracts open questions and follow-ups
+→ Lets you CHAT with your meeting using RAG + ChromaDB
+→ Export full report as PDF or TXT
+
+🛠️ TECH STACK:
+→ Python
+→ OpenAI Whisper (local, free)
+→ Sarvam AI (Hindi/Hinglish transcription)
+→ LangChain LCEL (modern pipeline)
+→ Mistral AI (free API)
+→ ChromaDB (vector database for RAG)
+→ HuggingFace Embeddings (local, free)
+→ Streamlit (UI)
