@@ -8,7 +8,9 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 def download_youtube_audio(url :str) ->str:
     output_path = os.path.join(DOWNLOAD_DIR, "%(title)s.%(ext)s")
     ydl_opts = {
-        "format": "bestaudio/best",
+        # Explicitly use a webm audio-only format so the final container is
+        # deterministic (avoids the intermediate .mp4/.m4a path mapping bug).
+        "format": "251/bestaudio/best",
         "outtmpl": output_path,
         # Use the Android client, which reliably bypasses YouTube's 403
         # bot-detection on the media servers (default web/tv/ios clients get blocked).
@@ -28,7 +30,10 @@ def download_youtube_audio(url :str) ->str:
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info).replace(".webm", ".wav").replace(".m4a", ".wav")
+        # The FFmpeg postprocessor converts to WAV, so point back at the .wav
+        # that actually exists on disk (interval container is webm here).
+        base = os.path.splitext(ydl.prepare_filename(info))[0]
+        filename = base + ".wav"
     return filename
 
 
